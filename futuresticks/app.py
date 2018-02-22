@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import click
 import requests
+from time import sleep
 
 @click.group()
 def cli():
@@ -16,8 +17,9 @@ def hello(count, name):
         click.echo('Hello %s!' % name)
 
 @cli.command()
-@click.option('--quote', default='AG0', help='index of futures quote, could be a comma splitted array')
-def get_quote(quote):
+@click.option('--quote','-q', default='AG0', help='index of futures quote, could be a comma splitted array')
+@click.option('--repeat',default=True, help='refresh infinitely')
+def get_quote(quote, repeat):
     """Getting data from sina api.
  RB0 螺纹钢
  AG0 白银
@@ -50,9 +52,21 @@ def get_quote(quote):
     response = requests.get("http://hq.sinajs.cn/list="+quote)
 #    print(response.text)
     #print(response.json())
-    for arrraw in response.text.splitlines():
-        arr = arrraw.split('=')[1].strip(';').strip('"').split(',')
-        print(arr[0]+","+arr[16]+"," + arr[15] + "," + arr[17] + "," + arr[5] + "    " + arr[8]) # please check ticket #74 for detailed fields explain
+
+    while True:
+        linenum=0
+        for arrraw in response.text.splitlines():
+            arr = arrraw.split('=')[1].strip(';').strip('"').split(',')
+            print(arr[0]+","+arr[16]+"," + arr[15] + "," + arr[17] + "," + arr[5] + "    " + arr[8]) # please check ticket #74 for detailed fields explain
+            linenum = linenum + 1
+
+        if not repeat:
+            break;
+
+        sleep(1)
+
+        #clear buffer
+        print("\033[F" * (linenum + 1) + '\r') #"\033[F" move one line up, '\r' move cursor back to beginning of line
 
 
 if __name__ == '__main__':
