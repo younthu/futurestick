@@ -4,5 +4,5 @@ read futures tick from sina api
 # Run sample command
 
 ~~~
-python app.py --count=3
+python futuresticks get_quote
 ~~~
