@@ -2,6 +2,7 @@
 import click
 import requests
 from time import sleep
+from models.trade import Trade
 
 @click.group()
 def cli():
@@ -15,6 +16,7 @@ def hello(count, name):
     """Simple program that greets NAME for a total of COUNT times."""
     for x in range(count):
         click.echo('Hello %s!' % name)
+
 
 @cli.command()
 @click.option('--quote','-q', default='AG0', help='index of futures quote, could be a comma splitted array')
@@ -96,6 +98,14 @@ def get_quote(quote, repeat):
 
         #clear buffer
         print("\033[F" * (linenum + 1) + '\r') #"\033[F" move one line up, '\r' move cursor back to beginning of line
+
+
+@cli.command()
+@click.option('--code', '-c', help='code of futures product')
+@click.option('--num', '-n', help='num of futures')
+@click.option('--price', '-p', help='price of futures product')
+def trade_product(code, num, price):
+    Trade.trade(code, num, price)
 
 
 if __name__ == '__main__':
