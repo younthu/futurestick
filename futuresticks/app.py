@@ -3,10 +3,13 @@ import click
 import requests
 from time import sleep
 from models.trade import Trade
+from models.stop import Stop
+
 
 @click.group()
 def cli():
     pass
+
 
 @cli.command()
 @click.option('--count', default=1, help='Number of greetings.')
@@ -19,8 +22,8 @@ def hello(count, name):
 
 
 @cli.command()
-@click.option('--quote','-q', default='AG0', help='index of futures quote, could be a comma splitted array')
-@click.option('--repeat',default=True, help='refresh infinitely')
+@click.option('--quote', '-q', default='AG0', help='index of futures quote, could be a comma splitted array')
+@click.option('--repeat', default=True, help='refresh infinitely')
 def get_quote(quote, repeat):
     """ list of codes:
     郑商所：
@@ -81,23 +84,22 @@ def get_quote(quote, repeat):
     更多请参考： http://vip.stock.finance.sina.com.cn/quotes_service/view/qihuohangqing.html
     """
     response = requests.get("http://hq.sinajs.cn/list="+quote)
-#    print(response.text)
-    #print(response.json())
 
     while True:
-        linenum=0
+        linenum = 0
         for arrraw in response.text.splitlines():
             arr = arrraw.split('=')[1].strip(';').strip('"').split(',')
-            print(arr[0]+","+arr[16]+"," + arr[15] + "," + arr[17] + "," + arr[5] + "    " + arr[8]) # please check ticket #74 for detailed fields explain
+            print(arr[0]+","+arr[16]+"," + arr[15] + "," + arr[17] + "," + arr[5] + "    " + arr[8])
             linenum = linenum + 1
 
         if not repeat:
-            break;
+            break
 
         sleep(1)
 
-        #clear buffer
-        print("\033[F" * (linenum + 1) + '\r') #"\033[F" move one line up, '\r' move cursor back to beginning of line
+        # clear buffer#
+        #  "\033[F" move one line up, '\r' move cursor back to beginning of line
+        print("\033[F" * (linenum + 1) + '\r')
 
 
 @cli.command()
@@ -108,7 +110,14 @@ def trade_product(code, num, price):
     Trade.trade(code, num, price)
 
 
+@cli.command()
+@click.option('--code', '-c', help='code of futures product')
+@click.option('--stop', '-s', help='stop loss limit')
+@click.option('--num', '-n', help='num of product to sell, positive number for stop profit, negative for stop loss')
+def stop_order(code, stop, num):
+    Stop.stop_order(code, stop, num)
+    pass
+
 if __name__ == '__main__':
-   # hello()
-   cli()
-   pass
+    cli()
+    pass
