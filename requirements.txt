@@ -1,3 +1,4 @@
 click==6.7		# commandline app wrapper
 SQLAlchemy==1.2.0	# python orm
 alembic==0.9.5		# database version management
+pymongo==3.5

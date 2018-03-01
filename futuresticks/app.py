@@ -4,7 +4,7 @@ import requests
 from time import sleep
 from models.trade import Trade
 from models.stop import Stop
-
+from pymongo import *
 
 @click.group()
 def cli():
@@ -23,8 +23,9 @@ def hello(count, name):
 
 @cli.command()
 @click.option('--quote', '-q', default='AG0', help='index of futures quote, could be a comma splitted array')
-@click.option('--repeat', default=True, help='refresh infinitely')
-def get_quote(quote, repeat):
+@click.option('--repeat','-r',  default=True, help='refresh infinitely')
+@click.option('--save', '-s', default=True, help='save ticks to mongo db')
+def get_quote(quote, repeat, save):
     """ list of codes:
     郑商所：
     TA0	    PTA连续
@@ -84,12 +85,19 @@ def get_quote(quote, repeat):
     更多请参考： http://vip.stock.finance.sina.com.cn/quotes_service/view/qihuohangqing.html
     """
     response = requests.get("http://hq.sinajs.cn/list="+quote)
+    client = MongoClient()
+    db = client.futuresticks
+    collection = db.first_product
 
     while True:
         linenum = 0
         for arrraw in response.text.splitlines():
             arr = arrraw.split('=')[1].strip(';').strip('"').split(',')
             print(arr[0]+","+arr[16]+"," + arr[15] + "," + arr[17] + "," + arr[5] + "    " + arr[8])
+
+            if save:
+                collection.insert({'code':quote, 'tick': arr[8]})
+
             linenum = linenum + 1
 
         if not repeat:
